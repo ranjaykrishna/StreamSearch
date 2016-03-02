@@ -1,22 +1,19 @@
 from twython import Twython
 from twython import TwythonStreamer
-from jinja2 import Environment, FileSystemLoader
 import json
-import os
 import pprint
+from flask import Flask
+from flask import render_template
+import threading
+from threading import Thread
 
+app = Flask(__name__)
 pics_arr = []
 counter = int(0)
 
-# Capture our current directory
-THIS_DIR = os.path.dirname(os.path.abspath(__file__))
-
-def print_html_doc():
-    j2_env = Environment(loader=FileSystemLoader(THIS_DIR),
-                         trim_blocks=True)
-    return j2_env.get_template('jinjadisplay.html').render(
-        mylist=pics_arr
-    )
+@app.route('/')
+def render_images():
+    return render_template('jinjadisplay.html', mylist=pics_arr)
 
 class TweetStreamer(TwythonStreamer):
     def on_success(self, data):
@@ -29,19 +26,21 @@ class TweetStreamer(TwythonStreamer):
                     counter+=1
                     pprint.pprint(url)
                     print counter
-                    if counter == 30:
-                        myfile = open('array.html', 'w')
-                        myfile.write(print_html_doc())
-                        counter = 0
-                        pprint.pprint(pics_arr)
-
     def on_error(self, status_code, data):
         print status_code
         self.disconnect()
 
+def runServer():
+    app.run()
+
+def streamTwitter():
+    streamer = TweetStreamer(creds['APP_KEY'], creds['APP_SECRET'],
+                             creds['ACCESS_TOKEN'], creds['ACCESS_SECRET'])
+    streamer.statuses.filter(track = 'news photo')
+
 # Extract the user credentials
 creds = json.load(open('config.json'))
 
-streamer = TweetStreamer(creds['APP_KEY'], creds['APP_SECRET'],
-                         creds['ACCESS_TOKEN'], creds['ACCESS_SECRET'])
-streamer.statuses.filter(track = 'news photo')
+if __name__ == '__main__':
+    Thread(target = runServer).start()
+    Thread(target = streamTwitter).start()
