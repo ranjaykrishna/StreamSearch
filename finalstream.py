@@ -1,6 +1,7 @@
 from twython import Twython
 from twython import TwythonStreamer
 from jinja2 import Environment, FileSystemLoader
+import json
 import os
 import pprint
 
@@ -34,17 +35,13 @@ class TweetStreamer(TwythonStreamer):
                         counter = 0
                         pprint.pprint(pics_arr)
 
-                        
     def on_error(self, status_code, data):
         print status_code
         self.disconnect()
 
-# Variables that contains the user credentials to access Twitter API 
-ACCESS_TOKEN = '4810108273-29fLXZeEVCuHlBxV4ieSi4bjIforbcMjJ32o9zB'
-ACCESS_SECRET = 'oyYR28rhzj8wKzOTtqFHjYJm5Qxh7QMyD84IghlRBM1rW'
-APP_KEY = '8Y78sbZwApCwv3vUKfzN4qY2B'
-APP_SECRET = '93S7JSsHYHwWTLPUforTs3nSrRECAvCJdeuI8E8lbIBWqmfnmb'
+# Extract the user credentials
+creds = json.load(open('config.json'))
 
-streamer = TweetStreamer(APP_KEY, APP_SECRET,
-                         ACCESS_TOKEN, ACCESS_SECRET)
+streamer = TweetStreamer(creds['APP_KEY'], creds['APP_SECRET'],
+                         creds['ACCESS_TOKEN'], creds['ACCESS_SECRET'])
 streamer.statuses.filter(track = 'news photo')
