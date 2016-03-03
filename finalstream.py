@@ -7,6 +7,8 @@ from flask import render_template
 import threading
 from threading import Thread
 
+MAX_SIZE = 200
+
 app = Flask(__name__)
 pics_arr = []
 counter = int(0)
@@ -21,6 +23,10 @@ class TweetStreamer(TwythonStreamer):
             if 'media' in data['entities']:
                 if 'media_url' in data['entities']['media'][0]:
                     url = data['entities']['media'][0]['media_url']
+                    # cap at MAX_SIZE 
+                    if (counter == MAX_SIZE): 
+                        del pics_arr[-1]
+                        counter-=1
                     pics_arr.insert(0,url)
                     global counter 
                     counter+=1
