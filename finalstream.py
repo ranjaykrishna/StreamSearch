@@ -3,7 +3,7 @@ from twython import TwythonStreamer
 import json
 import pprint
 from flask import Flask
-from flask import render_template
+from flask import render_template, request, url_for
 import threading
 from threading import Thread
 
@@ -12,9 +12,20 @@ MAX_SIZE = 200
 app = Flask(__name__)
 pics_arr = []
 counter = int(0)
+query = ""
 
 @app.route('/')
 def render_images():
+    return render_template('jinjadisplay.html', mylist=pics_arr)
+
+@app.route('/post', methods = ['POST'])
+def post():
+    # Get the parsed contents of the form data
+    global query
+    query = request.form['query-input']
+    print query
+    searchThread = Thread(target = streamTwitter(query)).start()
+    # return redirect(url_for('render_images'))
     return render_template('jinjadisplay.html', mylist=pics_arr)
 
 class TweetStreamer(TwythonStreamer):
@@ -37,16 +48,16 @@ class TweetStreamer(TwythonStreamer):
         self.disconnect()
 
 def runServer():
-    app.run()
+    app.run(processes=2)
 
-def streamTwitter():
+def streamTwitter(filter_query):
     streamer = TweetStreamer(creds['APP_KEY'], creds['APP_SECRET'],
                              creds['ACCESS_TOKEN'], creds['ACCESS_SECRET'])
-    streamer.statuses.filter(track = 'news photo')
+    streamer.statuses.filter(track = filter_query)
 
 # Extract the user credentials
 creds = json.load(open('config.json'))
 
 if __name__ == '__main__':
     Thread(target = runServer).start()
-    Thread(target = streamTwitter).start()
+    # searchThread = Thread(target = streamTwitter(query)).start()
