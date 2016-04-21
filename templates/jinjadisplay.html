@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
-	    <!-- <META HTTP-EQUIV="refresh" CONTENT="5"> -->
 	    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
 		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
@@ -12,7 +11,7 @@
 		<div class="container">
 			<form method="post" action="/" style="padding-top: 1em; padding-bottom: 1em;" id="explore_search_page" class="" role="search">
 			    <div class="row">
-			      <label style="text-align: -webkit-right; padding-top: 10px;"class="col-md-3 col-xs-3 form-text">Explore our data:</label>
+			      <label style="text-align: -webkit-right; padding-top: 10px;"class="col-md-3 col-xs-3 form-text">Explore live data:</label>
 			      
 			        <input name="query-input" style="border:2px solid; height:45px; width:50%;" id="explore_search_page_input" type="text" class="col-md-6 col-xs-6 form-control" value="">
 			      
@@ -28,41 +27,52 @@
 
 		    <script type="text/javascript">
 
-		    	pic_arr = [];
-				setInterval( function(){			   		
-			   		$(function() {
-				   		
-						$.ajax({
-				    		url: '/data',
-				    		success: function(response) {
-				    			var data = $.map(response, function(el) { return el });
-				    			var num_new_elems = data.length - pic_arr.length;
-				    			var old_len = pic_arr.length;
-				    			if (pic_arr.length === 0) {
-				    				console.log("setting pic and data equal");
-				    				pic_arr = data;
-				    			// } else {
-				    				// pic_arr = data.slice(pic_arr.length-1,-1)
-				    			}
-				    			console.log("num new elems "+num_new_elems);
-				    			console.log("data len: "+data.length);
-				    			console.log("pic_arr len: "+pic_arr.length);
-				    			console.log("");
-				    			
-				    			for (var i=0; i < num_new_elems; i++) {
+		    	var pic_num_limit = 100;
+		    	var pic_arr = [];
+				setInterval( function(){			   			
+					$.ajax({
+			    		url: '/data',
+			    		success: function(response) {
+			    			var data = $.map(response, function(el) { return el });
+			    			var num_new_elems = data.length;
+			    			var old_len = pic_arr.length;
+			    			console.log("num new elems "+num_new_elems);
+			    			console.log("old pic_arr len: "+pic_arr.length);
+			    			console.log("");
+			    			
+			    			for (var i=0; i < num_new_elems; i++) {
 
-				    				var new_elem = '<img style="width: 160px; height: 120px; background-image: url('+data[old_len+i]+'); background-size: cover;">';
-				    				$("#image-list").prepend(new_elem);
-				    			}
-				    			pic_arr = data;
+			    				var new_elem = '<img style="width: 160px; height: 120px; background-image: url('+data[i]+'); background-size: cover;">';
+			    				$("#image-list").prepend(new_elem);
+			    				pic_arr.push(data[i]);
+			    			}
 
-				    			
-				    		},
-				    		type: 'GET'
-				    	});
-				   	});
-		    	
+			    			//delete dom elems from end of array
+			    			if (pic_arr.length > pic_num_limit){
+			    				var num_elems_remove = pic_arr.length - pic_num_limit;
+			    				var img_elems = $("#image-list")[0].childNodes;
+			    				var img_list_size = img_elems.length;
+			    				for (var j=0; j < num_elems_remove; j++) {
+			    					$("#image-list")[0].removeChild($("#image-list")[0].childNodes[img_list_size-2-j]);
+			    				}
+			    				pic_arr.splice(0,num_elems_remove);
+			    			}
+			    		},
+			    		type: 'GET'
+			    	});
 		    	}, 5000);
+
+
+				$('#explore_search_page').submit(function(event) {
+					event.preventDefault();
+	  				var query = $('#explore_search_page_input').val();
+					$.ajax({
+					  type: "POST",
+					  url: "/",
+					  data: {"query-input": query}, 
+					  success: function(){}
+					});
+	  			});
 		    
 		    </script>
 	    </div>
