@@ -5,6 +5,7 @@
 	    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
 		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
 	</head>
 
 	<body>
@@ -19,11 +20,51 @@
 			    </div>
 	  		</form>
 			
-		    <ul>
+		    <ul id="image-list">
 		    {% for item in mylist %}
 		        <img style="width: 160px; height: 120px; background-image: url('{{ item }}'); background-size: cover;">
 		    {% endfor %}
 		    </ul>
+
+		    <script type="text/javascript">
+
+		    	pic_arr = [];
+				setInterval( function(){			   		
+			   		$(function() {
+				   		
+						$.ajax({
+				    		url: '/data',
+				    		success: function(response) {
+				    			var data = $.map(response, function(el) { return el });
+				    			var num_new_elems = data.length - pic_arr.length;
+				    			var old_len = pic_arr.length;
+				    			if (pic_arr.length === 0) {
+				    				console.log("setting pic and data equal");
+				    				pic_arr = data;
+				    			// } else {
+				    				// pic_arr = data.slice(pic_arr.length-1,-1)
+				    			}
+				    			console.log("num new elems "+num_new_elems);
+				    			console.log("data len: "+data.length);
+				    			console.log("pic_arr len: "+pic_arr.length);
+				    			console.log("");
+				    			
+				    			for (var i=0; i < num_new_elems; i++) {
+
+				    				var new_elem = '<img style="width: 160px; height: 120px; background-image: url('+data[old_len+i]+'); background-size: cover;">';
+				    				$("#image-list").prepend(new_elem);
+				    			}
+				    			pic_arr = data;
+
+				    			
+				    		},
+				    		type: 'GET'
+				    	});
+				   	});
+		    	
+		    	}, 5000);
+		    
+		    </script>
 	    </div>
 	</body>
 </html>
